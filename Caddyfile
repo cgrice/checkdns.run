@@ -1,11 +1,21 @@
 :80
 
-root /assets/* /app/assets
-reverse_proxy localhost:8080
-file_server
-
 @insecure {
   header X-Forwarded-Proto http
 }
 
-redir @insecure https://{host}{uri} permanent
+route /assets/* {
+    file_server {
+        root /app/
+    }
+    redir @insecure https://{host}{uri} permanent
+}
+
+route {
+    reverse_proxy localhost:8080
+}
+
+
+
+
+
