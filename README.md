@@ -24,10 +24,17 @@ and [gorilla/mux](https://github.com/gorilla/mux) for routing
 * [fly.io](https://fly.io/) for hosting and cert management
 * [Caddy](https://caddyserver.com/) for static files and general webserver loveliness
 
+## Getting started
+
+* install [air](https://github.com/cosmtrek/air)
+* run `air` to download required modules and run a hot-reloading local server
+* go to [http://localhost:8080](http://localhost:8080)
+
 ## TODO
 
 * Add the rest of the records that miekg/dns supports (basically, all of them)
 * Add ability to check propogation of records
 * Add permalink to results pages
+* Probably add some tests once I learn how to use `go test`
 
 
