@@ -13,7 +13,7 @@ type Record struct {
 	TTL time.Duration
 	Nameserver string
 	RecordType string
-	Latency time.Duration
+	RawAnswer string
 }
 
 func getRecordType(recordtype string) uint16 {
@@ -22,12 +22,13 @@ func getRecordType(recordtype string) uint16 {
 		"NS": dns.TypeNS,
 		"CNAME": dns.TypeCNAME,
 		"TXT": dns.TypeTXT,
+		"SOA": dns.TypeSOA,
 	}
 
 	return lookup[recordtype]
 }
 
-func Query(domain string, recordtype string, nameserver string) []Record {
+func Query(domain string, recordtype string, nameserver string) ([]Record, time.Duration) {
 	message := new(dns.Msg)
 	message.Id = dns.Id()
 	message.RecursionDesired = true
@@ -41,6 +42,7 @@ func Query(domain string, recordtype string, nameserver string) []Record {
 
 	for i, answer := range result.Answer {
 		ttl := time.Duration(int64(answer.Header().Ttl) * 1000 * 1000 * 1000)
+		raw := answer.String()
 		switch t := answer.(type) {
 		case *dns.A:
 			results[i] = Record{
@@ -49,7 +51,7 @@ func Query(domain string, recordtype string, nameserver string) []Record {
 				TTL: ttl,
 				Nameserver: nameserver,
 				RecordType: "A",
-				Latency: rtt,
+				RawAnswer: raw,
 			}
 		case *dns.CNAME:
 			results[i] = Record{
@@ -58,7 +60,7 @@ func Query(domain string, recordtype string, nameserver string) []Record {
 				TTL: ttl,
 				Nameserver: nameserver,
 				RecordType: "CNAME",
-				Latency: rtt,
+				RawAnswer: raw,
 			}
 		case *dns.TXT:
 			results[i] = Record{
@@ -67,11 +69,21 @@ func Query(domain string, recordtype string, nameserver string) []Record {
 				TTL: ttl,
 				Nameserver: nameserver,
 				RecordType: "TXT",
-				Latency: rtt,
+				RawAnswer: raw,
+			}
+		case *dns.SOA:
+			results[i] = Record{
+				Query: t.Hdr.Name,
+				Result: t.Ns + " " + t.Mbox,
+				TTL: ttl,
+				Nameserver: nameserver,
+				RecordType: "SOA",
+				RawAnswer: raw,
 			}
 		}
+		
 	}
 
-	return results
+	return results, rtt
 }
 

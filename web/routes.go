@@ -2,6 +2,8 @@ package web
 
 import (
 	"fmt"
+	"embed"
+	"time"
 	"net/http"
 	"html/template"
 	"github.com/gorilla/mux"
@@ -10,12 +12,16 @@ import (
 
 type ResultsPageData struct {
     Query   string
+	Nameserver string
     Results []dns.Record
+	Latency time.Duration
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-	t := template.Must(template.ParseFiles("./web/templates/layout.html", "./web/templates/home.html"))
+//go:embed templates/*.html
+var templateData embed.FS
 
+func home(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.ParseFS(templateData, "templates/layout.html", "templates/home.html"))
     t.Execute(w, ResultsPageData{})
 }
 
@@ -33,18 +39,15 @@ func lookup(w http.ResponseWriter, r *http.Request) {
 		recordtype = vars["type"]		
 	}
 	
-	fmt.Println(nameserver, recordtype)
+	results, latency := dns.Query(vars["domain"], recordtype, nameserver)
 
-
-	results := dns.Query(vars["domain"], recordtype, nameserver)
-
-	t := template.Must(template.ParseFiles("./web/templates/layout.html", "./web/templates/home.html"))
-
-	fmt.Println(results)
+	t := template.Must(template.ParseFS(templateData, "templates/layout.html", "templates/home.html"))
 
 	t.Execute(w, ResultsPageData{
 		Results: results,
 		Query: vars["domain"],
+		Nameserver: nameserver,
+		Latency: latency.Round(time.Millisecond),
 	})
 }
 
@@ -61,10 +64,8 @@ func query(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if(r.FormValue("recordtype") != "") {
-		redirectURL = redirectURL + "/" + r.FormValue("recordtype")
+		redirectURL = r.FormValue("recordtype") + "/" + redirectURL
 	}
-
-	// fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
 
 	http.Redirect(w, r, redirectURL, 301)
 }
@@ -75,8 +76,8 @@ func GetRouter() *mux.Router {
 
     r.HandleFunc("/", home)
 	r.HandleFunc("/query", query).Methods("POST")
-	r.HandleFunc("/{domain}@{nameserver}/{type}", lookup)
-	r.HandleFunc("/{domain}/{type}", lookup)
+	r.HandleFunc("/{type}/{domain}@{nameserver}", lookup)
+	r.HandleFunc("/{type}/{domain}", lookup)
 	r.HandleFunc("/{domain}@{nameserver}", lookup)
 	r.HandleFunc("/{domain}", lookup)
 	
