@@ -1,6 +1,6 @@
 # :mag: checkdns.run
 
-checkdns.run is an extremely simple DNS lookup service, aiming to allow people to quickly
+[checkdns.run](https://checkdns.run) is an extremely simple DNS lookup service, aiming to allow people to quickly
 check DNS records on various nameservers.
 
 Currently supports queries on:
