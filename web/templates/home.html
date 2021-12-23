@@ -1,0 +1,161 @@
+{{template "layout" .}}
+
+{{define "main"}}
+
+<div class="space-y-8 divide-y divide-gray-200" x-data="{ showAdvanced: false, showDetail: false }">
+    <form class="max-w-sm mx-auto space-y-4" method="POST" action="/query">
+        <div>
+            <label for="domain" class="block text-sm font-medium text-gray-700">Domain</label>
+            <div class="mt-1">
+                <input 
+                    type="text" 
+                    name="domain" 
+                    id="domain" 
+                    class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" 
+                    placeholder="example.com"
+                    {{ if .Query}} value="{{ .Query }}" {{ end}}
+                >
+            </div>
+        </div>
+        <div class="flex items-center justify-end">
+            <span class="mr-3" id="annual-billing-label">
+                <span class="text-sm font-medium text-gray-900">Advanced Controls</span>
+            </span>
+            <button 
+                @click="showAdvanced = !showAdvanced"
+                x-bind:class="showAdvanced ? 'bg-indigo-600' : 'bg-gray-200'"
+                type="button" 
+                class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
+                role="switch" 
+                aria-checked="false" 
+                aria-labelledby="annual-billing-label"
+            >
+                <span 
+                    aria-hidden="true" 
+                    x-bind:aria-hidden="showAdvanced ? true : false"
+                    x-bind:class="showAdvanced ? 'translate-x-5' : 'translate-x-0'"
+                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
+                ></span>
+            </button>
+            
+        </div>
+        <template x-if="showAdvanced">
+            <div x-cloak>
+                <label for="nameserver" class="block text-sm font-medium text-gray-700">Nameserver</label>
+                <div class="mt-1">
+                    <select id="nameserver" name="nameserver" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                        <option value="8.8.8.8">Google (8.8.8.8)</option>
+                        <option value="1.1.1.1">CloudFlare (1.1.1.1)</option>
+                        <option value="208.67.222.222">OpenDNS (208.67.222.222)</option>
+                    </select>
+                </div>
+            </div>
+        </template>
+        <template x-if="showAdvanced">
+            <div x-cloak>
+                <label for="recordtype" class="block text-sm font-medium text-gray-700">Type</label>
+                <div class="mt-1">
+                    <select id="recordtype" name="recordtype" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                        <option value="A">A</option>
+                        <option value="AAAA">AAAA</option>
+                        <option value="ALIAS">ALIAS</option>
+                        <option value="CNAME">CNAME</option>
+                        <option value="MX">MX</option>
+                        <option value="NS">NS</option>
+                        <option value="PTR">PTR</option>
+                        <option value="SOA">SOA</option>
+                        <option value="SRV">SRV</option>
+                        <option value="TXT">TXT</option>
+                    </select>
+                </div>
+            </div>
+        </template>
+        <div>
+            <button type="submit" class="inline-flex mt-2 w-full justify-center items-center px-4 py-2 border border-transparent text-base font-semibold rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Lookup DNS
+            </button>
+        </div>
+    </form>
+
+    {{ if .Results }}
+    <div>
+
+        <div class="flex justify-between">
+            <h3 class="my-4 text-lg ">query results for <span class="font-semibold font-mono">{{ .Query }}</span></h3>
+            
+            <div class="flex items-center justify-end">
+                <span class="mr-3" id="annual-billing-label">
+                    <span class="text-sm font-medium text-gray-900">Extra Detail</span>
+                </span>
+                <button 
+                    @click="showDetail = !showDetail"
+                    x-bind:class="showDetail ? 'bg-indigo-600' : 'bg-gray-200'"
+                    type="button" 
+                    class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
+                    role="switch" 
+                >
+                    <span 
+                        aria-hidden="true" 
+                        x-bind:aria-hidden="showDetail ? true : false"
+                        x-bind:class="showDetail ? 'translate-x-5' : 'translate-x-0'"
+                        class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
+                    ></span>
+                </button>
+                
+            </div>
+        </div>
+        
+
+        <div class="bg-white shadow overflow-hidden rounded-md border border-indigo-200">
+            <ul role="list" class="divide-y divide-indigo-200">
+                {{range .Results}}
+                <li>
+                    <div class="px-6 py-6">
+                        <div class="sm:flex items-center sm:justify-between">
+                            <p class="text-sm font-semibold sm:break-normal break-words font-mono">
+                            {{ .Query }}
+                            </p>
+                            <div class="mt-2 sm:ml-2 flex-shrink-0 flex sm:mt-0">
+                                <p class="sm:px-2 inline-flex text-xs leading-5 font-semibold rounded-full sm:bg-indigo-100 sm:text-indigo-800">
+                                    {{ .RecordType }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 sm:flex sm:justify-between">
+                            <div class="sm:flex">
+                            <p class="mt-2 text-sm text-gray-800 sm:mt-0 break-words sm:break-normal font-mono">
+                                {{ .Result }}
+                            </p>
+                            </div>
+                            <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                            <p>
+                                Expires in
+                                <span>{{ .TTL }}</span>
+                            </p>
+                            </div>
+                        </div>
+                        <div class="mt-4 sm:flex sm:justify-start sm:space-x-4" x-show="showDetail" x-cloak>
+                            <div class="sm:flex">
+                            <p class="mt-2 text-xs text-gray-400 sm:mt-0 break-words sm:break-normal font-mono">
+                                nameserver: {{ .Nameserver }}
+                            </p>
+                            </div>
+                            <div class="mt-2 flex items-center text-xs text-gray-400 sm:mt-0">
+                            <p>
+                                latency: {{ .Latency }}
+                            </p>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {{ end }}
+            </ul>
+        </div>
+
+    </div>
+    {{ else }}
+    <p>No Records</p>
+    {{ end }}
+</div>
+
+{{end}}
