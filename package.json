@@ -1,0 +1,19 @@
+{
+  "name": "dnslookup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "servers.js",
+  "dependencies": {
+    "@tailwindcss/forms": "^0.4.0",
+    "cssnano": "^5.0.14",
+    "postcss-cli": "^9.1.0",
+    "tailwindcss": "^3.0.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "build": "tailwindcss -i static/styles/main.css -o assets/main.css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
