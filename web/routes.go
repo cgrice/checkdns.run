@@ -5,10 +5,15 @@ import (
 	"net/http"
 )
 
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "assets/favicon.ico")
+}
+
 func GetRouter() *mux.Router {
 	r := mux.NewRouter()
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("assets"))))
+	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
+	r.HandleFunc("/favicon.ico", faviconHandler)
 	r.HandleFunc("/", home)
 	r.HandleFunc("/query", query).Methods("POST")
 	r.HandleFunc("/{type}/{domain}@{nameserver}", lookup)

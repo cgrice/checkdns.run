@@ -2,9 +2,12 @@
 
 {{define "main"}}
 
-<div class="space-y-8 divide-y divide-gray-200" x-data="{ showAdvanced: false, showDetail: false }">
-    <form class="max-w-sm mx-auto space-y-4" method="POST" action="/query">
-        <div>
+<div class="space-y-8 divide-y divide-gray-200" 
+     x-data="{ showAdvanced: {{if .ShowAdvanced}}true{{else}}false{{end}} }"
+     x-init="$watch('showAdvanced', val => docCookies.setItem('showAdvanced', val, null, '/'))"
+>
+    <form class="max-w-sm mx-auto" method="POST" action="/query">
+        <div class="mb-2">
             <label for="domain" class="block text-sm font-medium text-gray-700">Domain</label>
             <div class="mt-1">
                 <input 
@@ -13,19 +16,23 @@
                     id="domain" 
                     class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" 
                     placeholder="example.com"
+                    required
+                    autocomplete="off"
+                    oninvalid="this.setCustomValidity('You must provide a domain to query.')"
+                    oninput="this.setCustomValidity('')"
                     {{ if .Query}} value="{{ .Query }}" {{ end}}
                 >
             </div>
         </div>
-        <div class="flex items-center justify-end">
+        <div class="flex items-center justify-end mb-4">
             <span class="mr-3" id="annual-billing-label">
-                <span class="text-sm font-medium text-gray-900">Advanced Controls</span>
+                <span class="text-xs font-medium text-gray-500">Advanced Controls</span>
             </span>
             <button 
                 @click="showAdvanced = !showAdvanced"
                 x-bind:class="showAdvanced ? 'bg-indigo-600' : 'bg-gray-200'"
                 type="button" 
-                class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
+                class="mt-1 relative inline-flex flex-shrink-0 h-5 w-9 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
                 role="switch" 
                 aria-checked="false" 
                 aria-labelledby="annual-billing-label"
@@ -33,131 +40,141 @@
                 <span 
                     aria-hidden="true" 
                     x-bind:aria-hidden="showAdvanced ? true : false"
-                    x-bind:class="showAdvanced ? 'translate-x-5' : 'translate-x-0'"
-                    class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
+                    x-bind:class="showAdvanced ? 'translate-x-4' : 'translate-x-0'"
+                    class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
                 ></span>
             </button>
             
         </div>
-        <template x-if="showAdvanced">
-            <div x-cloak>
-                <label for="nameserver" class="block text-sm font-medium text-gray-700">Nameserver</label>
-                <div class="mt-1">
-                    <select id="nameserver" name="nameserver" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                        <option value="8.8.8.8">Google (8.8.8.8)</option>
-                        <option value="1.1.1.1">CloudFlare (1.1.1.1)</option>
-                        <option value="208.67.222.222">OpenDNS (208.67.222.222)</option>
-                    </select>
-                </div>
+        <div class="mb-4" x-show="showAdvanced" {{if not .ShowAdvanced}}x-cloak{{end}}>
+            <label for="nameserver" class="block text-sm font-medium text-gray-700">Nameserver</label>
+            <div class="mt-1">
+                <select x-bind:disabled="!showAdvanced" id="nameserver" name="nameserver" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option {{ if eq .Nameserver "8.8.8.8" }}selected{{end}} value="8.8.8.8">Google (8.8.8.8)</option>
+                    <option {{ if eq .Nameserver "1.1.1.1" }}selected{{end}} value="1.1.1.1">CloudFlare (1.1.1.1)</option>
+                    <option {{ if eq .Nameserver "208.67.222.222" }}selected{{end}} value="208.67.222.222">OpenDNS (208.67.222.222)</option>
+                </select>
             </div>
-        </template>
-        <template x-if="showAdvanced">
-            <div x-cloak>
-                <label for="recordtype" class="block text-sm font-medium text-gray-700">Type</label>
-                <div class="mt-1">
-                    <select id="recordtype" name="recordtype" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                        <option value="A">A</option>
-                        <option value="AAAA">AAAA</option>
-                        <option value="ALIAS">ALIAS</option>
-                        <option value="CNAME">CNAME</option>
-                        <option value="MX">MX</option>
-                        <option value="NS">NS</option>
-                        <option value="PTR">PTR</option>
-                        <option value="SOA">SOA</option>
-                        <option value="SRV">SRV</option>
-                        <option value="TXT">TXT</option>
-                    </select>
-                </div>
+        </div>
+        <div class="mb-4" x-show="showAdvanced" {{if not .ShowAdvanced}}x-cloak{{end}}>
+            <label for="recordtype" class="block text-sm font-medium text-gray-700">Type</label>
+            <div class="mt-1">
+                <select x-bind:disabled="!showAdvanced" id="recordtype" name="recordtype" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option {{ if eq .RecordType "A" }}selected{{end}} value="A">A</option>
+                    <option {{ if eq .RecordType "AAAA" }}selected{{end}} value="AAAA">AAAA</option>
+                    <option {{ if eq .RecordType "ALIAS" }}selected{{end}} value="ALIAS">ALIAS</option>
+                    <option {{ if eq .RecordType "CNAME" }}selected{{end}} value="CNAME">CNAME</option>
+                    <option {{ if eq .RecordType "MX" }}selected{{end}} value="MX">MX</option>
+                    <option {{ if eq .RecordType "NS" }}selected{{end}} value="NS">NS</option>
+                    <option {{ if eq .RecordType "PTR" }}selected{{end}} value="PTR">PTR</option>
+                    <option {{ if eq .RecordType "SOA" }}selected{{end}} value="SOA">SOA</option>
+                    <option {{ if eq .RecordType "SRV" }}selected{{end}} value="SRV">SRV</option>
+                    <option {{ if eq .RecordType "TXT" }}selected{{end}} value="TXT">TXT</option>
+                </select>
             </div>
-        </template>
-        <div>
+        </div>
+        <div class="mb-4">
             <button type="submit" class="inline-flex mt-2 w-full justify-center items-center px-4 py-2 border border-transparent text-base font-semibold rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Lookup DNS
             </button>
         </div>
     </form>
 
-    {{ if .Results }}
-    <div>
+    {{ if and .Results .Query }}
+        <div 
+            x-data="{ showDetail: {{if .ShowDetail}}true{{else}}false{{end}} }"
+            x-init="$watch('showDetail', val => docCookies.setItem('showDetail', val, null, '/'))"
+        >
 
-        <div class="flex justify-between">
-            <h3 class="my-4 text-lg ">query results for <span class="font-semibold font-mono">{{ .Query }}</span></h3>
-            
-            <div class="flex items-center justify-end">
-                <span class="mr-3" id="annual-billing-label">
-                    <span class="text-sm font-medium text-gray-900">Extra Detail</span>
-                </span>
-                <button 
-                    @click="showDetail = !showDetail"
-                    x-bind:class="showDetail ? 'bg-indigo-600' : 'bg-gray-200'"
-                    type="button" 
-                    class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
-                    role="switch" 
-                >
-                    <span 
-                        aria-hidden="true" 
-                        x-bind:aria-hidden="showDetail ? true : false"
-                        x-bind:class="showDetail ? 'translate-x-5' : 'translate-x-0'"
-                        class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
-                    ></span>
-                </button>
+            <div class="sm:flex w-full">
                 
+                <h3 class="my-6 text-md justify-start">
+                    <a href="{{ .Permalink }}" class="inline text-indigo-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                    </a>
+                    query results for <span class="font-semibold font-mono">{{ .Query }}</span>
+                </h3>
+                
+                <div class="flex items-center sm:justify-end ml-auto">
+                    <span class="mr-3" id="annual-billing-label">
+                        <span class="text-xs font-medium text-gray-500">Extra Detail</span>
+                    </span>
+                    <button 
+                        @click="showDetail = !showDetail"
+                        x-bind:class="showDetail ? 'bg-indigo-600' : 'bg-gray-200'"
+                        type="button" 
+                        class="mt-1 relative inline-flex flex-shrink-0 h-5 w-9 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
+                        role="switch" 
+                    >
+                        <span 
+                            aria-hidden="true" 
+                            x-bind:aria-hidden="showDetail ? true : false"
+                            x-bind:class="showDetail ? 'translate-x-4' : 'translate-x-0'"
+                            class="pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
+                        ></span>
+                    </button>
+                    
+                </div>
             </div>
-        </div>
 
-        <div class="mb-4 sm:flex sm:justify-start sm:space-x-4" x-show="showDetail" x-cloak>
-            <div class="sm:flex">
-            <p class="mt-2 text-xs text-gray-400 sm:mt-0 break-words sm:break-normal font-mono">
-                nameserver: {{ .Nameserver }}
-            </p>
+            <div class="mb-4 flex justify-start space-x-4" x-show="showDetail" {{if not .ShowDetail}}x-cloak{{end}}>
+                <div class="mt-2 text-xs text-gray-400 sm:mt-0 break-words sm:break-normal font-mono">
+                    nameserver: {{ .Nameserver }}
+                </div>
+                <div class="mt-2 text-xs text-gray-400 sm:mt-0">
+                    latency: {{ .Latency }}
+                </div>
             </div>
-            <div class="mt-2 flex items-center text-xs text-gray-400 sm:mt-0">
-            <p>
-                latency: {{ .Latency }}
-            </p>
-            </div>
-        </div>
-        
+            
 
-        <div class="bg-white shadow overflow-hidden rounded-md border border-indigo-200">
-            <ul role="list" class="divide-y divide-indigo-200">
-                {{range .Results}}
-                <li>
-                    <div class="px-6 py-6">
-                        <div class="sm:flex items-center sm:justify-between">
-                            <p class="text-sm font-semibold sm:break-normal break-words font-mono">
-                            {{ .Query }}
-                            </p>
-                            <div class="mt-2 sm:ml-2 flex-shrink-0 flex sm:mt-0">
-                                <p class="sm:px-2 inline-flex text-xs leading-5 font-semibold rounded-full sm:bg-indigo-100 sm:text-indigo-800">
-                                    {{ .RecordType }}
+            <div class="bg-white shadow overflow-hidden rounded-md border border-indigo-200">
+                <ul role="list" class="divide-y divide-indigo-200">
+                    {{range .Results}}
+                    <li>
+                        <div class="px-6 py-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-semibold sm:break-normal break-all font-mono">
+                                    {{ .Query }}
                                 </p>
+                                <div class="ml-2 flex-shrink-0 flex">
+                                    <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                        {{ .RecordType }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-4 sm:flex sm:justify-between">
+                                <div class="sm:flex">
+                                    <p class="mt-2 text-sm text-gray-800 sm:mt-0 break-all sm:break-normal font-mono">
+                                        {{ .Result }}
+                                    </p>
+                                </div>
+                                <div class="w-40 flex mt-2 sm:items-end sm:text-right sm:justify-end text-xs text-gray-500 sm:mt-0">
+                                    <p>
+                                        Expires in
+                                        <span>{{ .TTL }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-4 sm:flex sm:justify-start sm:space-x-4" x-show="showDetail" {{if not $.ShowDetail}}x-cloak{{end}}>
+                                <div class="mt-2 text-xs text-gray-400 sm:mt-0 break-words sm:break-normal font-mono">{{ .RawAnswer }}</div>
                             </div>
                         </div>
-                        <div class="mt-4 sm:flex sm:justify-between">
-                            <div class="sm:flex">
-                            <p class="mt-2 text-sm text-gray-800 sm:mt-0 break-words sm:break-normal font-mono">
-                                {{ .Result }}
-                            </p>
-                            </div>
-                            <div class="w-40 flex items-end text-right justify-end text-xs text-gray-500 sm:mt-0">
-                            <p>
-                                Expires in
-                                <span>{{ .TTL }}</span>
-                            </p>
-                            </div>
-                        </div>
-                        <div class="mt-4 sm:flex sm:justify-start sm:space-x-4" x-show="showDetail" x-cloak>
-                            <div class="mt-2 text-xs text-gray-400 sm:mt-0 break-words sm:break-normal font-mono">{{ .RawAnswer }}</div>
-                        </div>
-                    </div>
-                </li>
-                {{ end }}
-            </ul>
-        </div>
+                    </li>
+                    {{ end }}
+                </ul>
+            </div>
 
-    </div>
+        </div>
     {{ end }}
+    {{ if and .Query (not .Results)}}
+    <div class="py-4">
+        <div class="mt-6 flex sm:w-3/4 sm:mx-auto justify-center bg-white shadow overflow-hidden rounded-md border border-indigo-200">
+            <h3 class="my-4 text-lg ">no results for <span class="font-semibold font-mono">{{ .Query }}</span></h3>
+        </div>
+    </div>
+    {{end }}
 </div>
 
 {{end}}
