@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"fmt"
 	"github.com/miekg/dns"
 	"strings"
 	"time"
@@ -41,11 +42,13 @@ func createQuery(domain string, recordtype string) *dns.Msg {
 	return message
 }
 
-func runQuery(message *dns.Msg, nameserver string) (*dns.Msg, time.Duration) {
+func runQuery(message *dns.Msg, nameserver string) (*dns.Msg, time.Duration, error) {
 	client := new(dns.Client)
-	result, rtt, _ := client.Exchange(message, nameserver+":53")
+	result, rtt, err := client.Exchange(message, nameserver+":53")
 
-	return result, rtt
+	fmt.Println(err)
+
+	return result, rtt, err
 }
 
 func transformRecord(answer dns.RR) Record {
@@ -141,7 +144,12 @@ func transformRecord(answer dns.RR) Record {
 
 func Query(domain string, recordtype string, nameserver string) ([]Record, time.Duration) {
 	query := createQuery(domain, recordtype)
-	result, latency := runQuery(query, nameserver)
+	result, latency, err := runQuery(query, nameserver)
+
+	if (err != nil) {
+		fmt.Println(err, result)	
+		return make([]Record, 0), latency
+	}
 
 	results := make([]Record, len(result.Answer))
 
