@@ -1,0 +1,55 @@
+{{template "layout" .}}
+
+{{define "main"}}
+  <div class="max-w-3xl sm:flex text-sm justify-between sm:space-x-8 mx-auto mb-8 sm:mt-4">
+    <form class="sm:w-1/2" method="POST" action="/check-propogation">
+      <div class="mb-2">
+        
+        <label for="domain" class="block text-sm font-medium text-gray-700">Domain</label>
+        <div class="mt-1">
+          <input 
+            type="text" 
+            name="domain" 
+            id="domain" 
+            class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" 
+            placeholder="example.com"
+            required
+            autocomplete="off"
+            oninvalid="this.setCustomValidity('You must provide a domain to query.')"
+            oninput="this.setCustomValidity('')"
+            {{ if .Query}} value="{{ .Query }}" {{ end}}
+          >
+        </div>
+      </div>
+      <div class="mb-4">
+        <button type="submit" class="inline-flex mt-2 w-full justify-center items-center px-4 py-2 border border-transparent text-base font-semibold rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Check Propogation
+        </button>
+      </div>
+    </form>
+    <div class="sm:w-1/2 text-gray-500 space-y-4">
+      <p>DNS changes can sometimes not appear immediately. This process can take from only a few minutes, 
+          but often takes up to 48-72 hours and sometimes longer.</p>
+      <p>This tool allows you to check your domain across a set of geographically distributed servers
+      to see how many are returning results for the given domain</p>
+    </div>
+  </div>
+  <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    {{ range .Results }}
+      <li class="col-span-1 bg-white rounded-lg shadow divide-y divide-gray-200">
+        <div class="w-full flex items-center justify-between p-6 space-x-6">
+          <div class="flex-1 truncate">
+            <div class="flex items-center">
+              <span class="mr-2 flag-icon flag-icon-{{ .Server.Country }} w-3 h-3"></span>
+              <h3 class="text-gray-900 text-sm font-medium truncate">{{ .Server.Name }}</h3>
+              <span class="flex-shrink-0 justify-end ml-auto inline-block px-2 py-0.5 {{ if .Found }}bg-green-100 text-green-800{{ else }}bg-red-100 text-red-800{{ end }}text-green-800 text-xs font-medium bg-green-100 rounded-full">{{ if .Found }}success{{ else }}fail{{ end }}</span>
+            </div>
+            <p class="mt-1 text-gray-500 text-sm truncate">{{ .Server.Location }}</p>
+            <p class="mt-1 text-gray-500 text-sm font-semibold truncate">{{ .Result.Result }}</p>
+            <p class="mt-1 text-gray-500 text-xs truncate">{{ .Latency }}</p>
+          </div>
+        </div>
+      </li>
+    {{ end }}
+  </ul>
+{{end}}

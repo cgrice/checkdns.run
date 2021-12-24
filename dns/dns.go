@@ -5,6 +5,7 @@ import (
 	"github.com/miekg/dns"
 	"strings"
 	"time"
+	"net"
 )
 
 type Record struct {
@@ -44,9 +45,10 @@ func createQuery(domain string, recordtype string) *dns.Msg {
 
 func runQuery(message *dns.Msg, nameserver string) (*dns.Msg, time.Duration, error) {
 	client := new(dns.Client)
+	client.Dialer = &net.Dialer{
+		Timeout: 3000 * time.Millisecond,
+	}
 	result, rtt, err := client.Exchange(message, nameserver+":53")
-
-	fmt.Println(err)
 
 	return result, rtt, err
 }
@@ -147,7 +149,7 @@ func Query(domain string, recordtype string, nameserver string) ([]Record, time.
 	result, latency, err := runQuery(query, nameserver)
 
 	if (err != nil) {
-		fmt.Println(err, result)	
+		fmt.Println(err)	
 		return make([]Record, 0), latency
 	}
 

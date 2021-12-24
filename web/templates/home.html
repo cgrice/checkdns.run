@@ -1,7 +1,7 @@
 {{template "layout" .}}
 
 {{define "main"}}
-
+<div class="max-w-2xl mx-auto">
 <div class="space-y-8 divide-y divide-gray-200" 
      x-data="{ showAdvanced: {{if .ShowAdvanced}}true{{else}}false{{end}} }"
      x-init="$watch('showAdvanced', val => docCookies.setItem('showAdvanced', val, null, '/'))"
@@ -50,9 +50,9 @@
             <label for="nameserver" class="block text-sm font-medium text-gray-700">Nameserver</label>
             <div class="mt-1">
                 <select x-bind:disabled="!showAdvanced" id="nameserver" name="nameserver" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                    <option {{ if eq .Nameserver "8.8.8.8" }}selected{{end}} value="8.8.8.8">Google (8.8.8.8)</option>
-                    <option {{ if eq .Nameserver "1.1.1.1" }}selected{{end}} value="1.1.1.1">CloudFlare (1.1.1.1)</option>
-                    <option {{ if eq .Nameserver "208.67.222.222" }}selected{{end}} value="208.67.222.222">OpenDNS (208.67.222.222)</option>
+                    {{ range .Servers }}
+                    <option {{ if eq $.Nameserver .Address }}selected{{end}} value="{{ .Address }}">{{ .Name }} ({{ .Address}})</option>
+                    {{ end }}
                 </select>
             </div>
         </div>
@@ -176,5 +176,5 @@
     </div>
     {{end }}
 </div>
-
+</div>
 {{end}}
