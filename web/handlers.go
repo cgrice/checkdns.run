@@ -23,16 +23,17 @@ type ResultsPageData struct {
 	Permalink string
 }
 
-type PropogationResult struct {
+type PropagationResult struct {
 	Result dns.Record
 	Server dns.Server
 	Found bool
 	Latency time.Duration
 }
 
-type PropogationPageData struct {
+type PropagationPageData struct {
 	Query      string
-	Results    []PropogationResult
+	RecordType string
+	Results    []PropagationResult
 }
 
 //go:embed templates/*.html
@@ -103,12 +104,18 @@ func lookup(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, pageData)
 }
 
-func propogation(w http.ResponseWriter, r *http.Request) {
+func propagation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	var wg sync.WaitGroup
 
-	propogationResults := make(chan PropogationResult, 100)
+	propagationResults := make(chan PropagationResult, 100)
+
+	recordtype := "A"
+
+	if vars["type"] != "" {
+		recordtype = vars["type"]
+	}
 
 	for _, server := range dns.GetServers() {
 		wg.Add(1)
@@ -117,17 +124,17 @@ func propogation(w http.ResponseWriter, r *http.Request) {
 
 		go func() {
 			defer wg.Done()
-			results, latency := dns.Query(vars["domain"], "A", server.Address)
+			results, latency := dns.Query(vars["domain"], recordtype, server.Address)
 
 			if (len(results) > 0) {
-				propogationResults <- PropogationResult{
+				propagationResults <- PropagationResult{
 					Result: results[0],
 					Server: server,
 					Found: true,
 					Latency: latency,
 				}
 			} else {
-				propogationResults <- PropogationResult{
+				propagationResults <- PropagationResult{
 					Server: server,
 					Found: false,
 					Latency: latency,
@@ -137,17 +144,18 @@ func propogation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	wg.Wait()
-	close(propogationResults)
+	close(propagationResults)
 
-	t := template.Must(template.ParseFS(templateData, "templates/layout.html", "templates/propogation.html"))
+	t := template.Must(template.ParseFS(templateData, "templates/layout.html", "templates/propagation.html"))
 
-	results := make([]PropogationResult, 0)
-	for result := range propogationResults {
+	results := make([]PropagationResult, 0)
+	for result := range propagationResults {
 		results = append(results, result)
 	}
 
-	t.Execute(w, PropogationPageData{
+	t.Execute(w, PropagationPageData{
 		Query: vars["domain"],
+		RecordType: recordtype,
 		Results: results,
 	})
 }
@@ -171,7 +179,12 @@ func query(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, redirectURL, 301)
 }
 
-func checkPropogation(w http.ResponseWriter, r *http.Request) {
-	redirectURL := "/" + r.FormValue("domain") + "/propogation"
+func checkPropagation(w http.ResponseWriter, r *http.Request) {
+	redirectURL := "/" + r.FormValue("domain") + "/propagation"
+	
+	if r.FormValue("recordtype") != "" {
+		redirectURL = r.FormValue("recordtype") + "/" + redirectURL
+	}
+
 	http.Redirect(w, r, redirectURL, 301)
 }

@@ -2,7 +2,7 @@
 
 {{define "main"}}
   <div class="max-w-3xl sm:flex text-sm justify-between sm:space-x-8 mx-auto mb-8 sm:mt-4">
-    <form class="sm:w-1/2" method="POST" action="/check-propogation">
+    <form class="sm:w-1/2" method="POST" action="/check-propagation">
       <div class="mb-2">
         
         <label for="domain" class="block text-sm font-medium text-gray-700">Domain</label>
@@ -22,12 +22,29 @@
         </div>
       </div>
       <div class="mb-4">
+          <label for="recordtype" class="block text-sm font-medium text-gray-700">Type</label>
+          <div class="mt-1">
+              <select id="recordtype" name="recordtype" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                  <option {{ if eq .RecordType "A" }}selected{{end}} value="A">A</option>
+                  <option {{ if eq .RecordType "AAAA" }}selected{{end}} value="AAAA">AAAA</option>
+                  <option {{ if eq .RecordType "ALIAS" }}selected{{end}} value="ALIAS">ALIAS</option>
+                  <option {{ if eq .RecordType "CNAME" }}selected{{end}} value="CNAME">CNAME</option>
+                  <option {{ if eq .RecordType "MX" }}selected{{end}} value="MX">MX</option>
+                  <option {{ if eq .RecordType "NS" }}selected{{end}} value="NS">NS</option>
+                  <option {{ if eq .RecordType "PTR" }}selected{{end}} value="PTR">PTR</option>
+                  <option {{ if eq .RecordType "SOA" }}selected{{end}} value="SOA">SOA</option>
+                  <option {{ if eq .RecordType "SRV" }}selected{{end}} value="SRV">SRV</option>
+                  <option {{ if eq .RecordType "TXT" }}selected{{end}} value="TXT">TXT</option>
+              </select>
+          </div>
+      </div>
+      <div class="mb-4">
         <button type="submit" class="inline-flex mt-2 w-full justify-center items-center px-4 py-2 border border-transparent text-base font-semibold rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             Check Propogation
         </button>
       </div>
     </form>
-    <div class="sm:w-1/2 text-gray-500 space-y-4">
+    <div class="sm:w-1/2 text-gray-500 space-y-4 lg:mt-4">
       <p>DNS changes can sometimes not appear immediately. This process can take from only a few minutes, 
           but often takes up to 48-72 hours and sometimes longer.</p>
       <p>This tool allows you to check your domain across a set of geographically distributed servers

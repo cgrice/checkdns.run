@@ -16,13 +16,18 @@ func GetRouter() *mux.Router {
 	r.HandleFunc("/favicon.ico", faviconHandler)
 	r.HandleFunc("/", home)
 	r.HandleFunc("/query", query).Methods("POST")
-	r.HandleFunc("/check-propogation", checkPropogation).Methods("POST")
-	r.HandleFunc("/{domain}/propogation", propogation)
+
+	r.HandleFunc("/check-propagation", checkPropagation).Methods("POST")
+	r.HandleFunc("/{type}/{domain}@{nameserver}/propagation", propagation)
+	r.HandleFunc("/{type}/{domain}/propagation", propagation)
+	r.HandleFunc("/{domain}@{nameserver}/propagation", propagation)
+	r.HandleFunc("/{domain}/propagation", propagation)
+
 	r.HandleFunc("/{type}/{domain}@{nameserver}", lookup)
 	r.HandleFunc("/{type}/{domain}", lookup)
 	r.HandleFunc("/{domain}@{nameserver}", lookup)
+
 	r.HandleFunc("/{domain}", lookup)
-	
 
 	return r
 }

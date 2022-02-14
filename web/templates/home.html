@@ -96,9 +96,9 @@
                     </a>
                     query results for <span class="font-semibold font-mono">{{ .Query }}</span>
                 </h3>
-                
+
                 <div class="flex items-center sm:justify-end ml-auto">
-                    <span class="mr-3" id="annual-billing-label">
+                    <span class="mr-3">
                         <span class="text-xs font-medium text-gray-500">Extra Detail</span>
                     </span>
                     <button 
@@ -165,7 +165,14 @@
                     {{ end }}
                 </ul>
             </div>
+        </div>
 
+        <div class="py-4">
+            <div class="max-w-sm mx-auto">
+                <a href="/{{ .RecordType }}/{{ .Query }}/propagation" class="inline-flex mt-2 w-full justify-center items-center px-4 py-2 border border-transparent text-base font-semibold rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Check Propogation
+                </a>
+            </div>
         </div>
     {{ end }}
     {{ if and .Query (not .Results)}}
